@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart College Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding: 20px; }
+        .chart-box { background: white; border-radius: 10px; padding: 20px; width: 400px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; font-family: sans-serif; }
+    </style>
+</head>
+<body>
+    <h2>Smart College Analytics Dashboard</h2>
+    <div class="dashboard">
+        <div class="chart-box">
+            <canvas id="courseChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <canvas id="facultyChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        async function loadCharts() {
+            try {
+                // Ensure your Python server is running on this port!
+                const res = await fetch('http://127.0.0.1:8000/analyze-students');
+                const data = await res.json();
+
+                // 1. Bar Chart (Courses)
+                new Chart(document.getElementById('courseChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.charts.courses),
+                        datasets: [{ label: 'Students', data: Object.values(data.charts.courses), backgroundColor: '#4e73df' }]
+                    }
+                });
+
+                // 2. Pie Chart (Faculty)
+                new Chart(document.getElementById('facultyChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(data.charts.faculty),
+                        datasets: [{ data: Object.values(data.charts.faculty), backgroundColor: ['#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'] }]
+                    }
+                });
+            } catch (err) {
+                console.error("Fetch failed. Is the Python server running?", err);
+                document.body.innerHTML += `<p style="color:red; text-align:center;">Error: Cannot connect to ML Server. Make sure main.py is running!</p>`;
+            }
+        }
+        loadCharts();
+    </script>
+</body>
+</html>
